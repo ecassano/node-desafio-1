@@ -25,13 +25,19 @@ export const routes = [
     path: buildRoutePath('/tasks'),
     handler: (req, res) => {
       const { title, description } = req.body;
-      console.log(req.body);
+
+      if (!title || !description) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ message: 'Title and description are required' }));
+      }
+
       const task = db.create('tasks', {
         title,
         description,
       })
 
-      return res.writeHead(201).end(JSON.stringify(task));
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify(task));
     }
   },
   {
@@ -41,12 +47,23 @@ export const routes = [
       const { id } = req.params;
       const { title, description } = req.body;
 
-      db.update('tasks', id, {
+      if (!title || !description) {
+        res.writeHead(400)
+        return res.end(JSON.stringify({ message: 'Title and description are required' }));
+      }
+
+      const result = db.update('tasks', id, {
         title,
         description,
       })
 
-      return res.writeHead(204).end();
+      if (result.code === 204) {
+        res.writeHead(204);
+        return res.end();
+      }
+
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify(result));
     }
   },
   {
@@ -54,10 +71,15 @@ export const routes = [
     path: buildRoutePath('/tasks/:id/complete'),
     handler: (req, res) => {
       const { id } = req.params;
-      console.log(req.params);
-      db.toggleTask('tasks', id);
+      const result = db.toggleTask('tasks', id);
 
-      return res.writeHead(204).end();
+      if (result.code === 204) {
+        res.writeHead(204);
+        return res.end();
+      }
+
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify(result));
     }
   },
   {
@@ -65,9 +87,15 @@ export const routes = [
     path: buildRoutePath('/tasks/:id'),
     handler: (req, res) => {
       const { id } = req.params;
-      db.delete('tasks', id);
+      const result = db.delete('tasks', id);
 
-      return res.writeHead(204).end();
+      if (result.code === 204) {
+        res.writeHead(204);
+        return res.end();
+      }
+
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify(result));
     }
   }
 ]

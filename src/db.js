@@ -63,6 +63,10 @@ export class DB {
   }
 
   update(table, id, data) {
+    if (!this.#database[table]) {
+      return { code: 404, message: 'Table not found' };
+    }
+
     const taskIndex = this.#database[table].findIndex(val => val.id === id);
     const task = this.#database[table][taskIndex];
 
@@ -74,10 +78,18 @@ export class DB {
         updated_at: new Date()
       }
       this.#persist();
+
+      return { code: 204 };
     }
+
+    return { code: 404, message: 'Task not found' };
   }
 
   toggleTask(table, id) {
+    if (!this.#database[table]) {
+      return { code: 404, message: 'Table not found' };
+    }
+
     const taskIndex = this.#database[table].findIndex(val => val.id === id);
     const task = this.#database[table][taskIndex];
 
@@ -89,16 +101,28 @@ export class DB {
       }
 
       this.#persist();
+
+      return { code: 204 };
     }
+
+    return { code: 404, message: 'Task not found' };
   }
 
   delete(table, id) {
+    if (!this.#database[table]) {
+      return { code: 404, message: 'Table not found' };
+    }
+
     const taskIndex = this.#database[table].findIndex(val => val.id === id);
 
     if (taskIndex > -1) {
       this.#database[table].splice(taskIndex, 1);
       this.#persist();
+
+      return { code: 204 };
     }
+
+    return { code: 404, message: 'Task not found' };
   }
 
 }
